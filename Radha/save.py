@@ -213,11 +213,13 @@ async def save(client: Client, message: Message):
             return
             
         
-        for msgid in range(fromID, toID+1):
-		
-	    if is_free_user(message.from_user.id):
-            update_last_download_time(message.from_user.id)
-            # private
+        for msgid in range(fromID, toID + 1):
+
+            # Update last download time for free users
+            if is_free_user(message.from_user.id):
+                update_last_download_time(message.from_user.id)
+
+            # Private
             if "https://t.me/c/" in message.text:
                 user_data = database.sessions.find_one({'user_id': message.chat.id})
                 if not get(user_data, 'logged_in', False) or user_data['session'] is None:
