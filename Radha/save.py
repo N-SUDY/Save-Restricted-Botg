@@ -8,11 +8,11 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, User
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message 
 from pyrogram.enums import ChatMemberStatus
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 import os
 import threading
 import json
-from config import API_ID, API_HASH, FSUB_ID, FSUB_INV_LINK
+from config import API_ID, API_HASH, ADMIN_ID, FSUB_ID, FSUB_INV_LINK
 from database.db import database 
 from Radha.strings import strings, HELP_TXT
 
@@ -35,9 +35,26 @@ async def is_member(client: Client, user_id: int) -> bool:
         print(f"Error checking membership: {e}")
         return False
 
-def is_free_user(user_id: int) -> bool:
-    user = database.users.find_one({'user_id': user_id})
-    return user and user.get('plan', 'free') == 'free'
+def Check_Plan(user_id):
+    user_data = database.users.find_one({'user_id': user_id})
+    
+    # If the user is not found or doesn't have a 'plan', they are considered free users
+    if not user_data or user_data.get('plan') != 'premium':
+        return True
+    
+    # Check if the premium expiration date has passed
+    premium_expiration = user_data.get('premium_expiration')
+    if premium_expiration and datetime.utcnow() > premium_expiration:
+        # If expired, downgrade to free and return True
+        database.users.update_one(
+            {'user_id': user_id},
+            {'$set': {'plan': 'free'}}
+        )
+        return True
+    
+    # If the user is premium and the plan is still valid, they are not a free user
+    return False
+
 
 # Store download time after successful download
 def update_last_download_time(user_id: int):
@@ -159,6 +176,40 @@ async def send_help(client: Client, message: Message):
 	
     await client.send_message(message.chat.id, f"{HELP_TXT}")
 
+
+@Client.on_message(filters.command("upgrade") & filters.private)
+async def upgrade_to_premium(client, message):
+    # Check if the user is an admin
+    if message.from_user.id not in ADMIN_ID:
+        await message.reply("Error: This command can only be used by admins.")
+        return
+    
+    try:
+        # Extract user ID and days from the command
+        command = message.text.split()
+        if len(command) != 3:
+            await message.reply("Usage: /upgrade <user_id> <days>")
+            return
+        
+        user_id = int(command[1])
+        days = int(command[2])
+        
+        # Calculate premium expiration date
+        expiration_date = datetime.utcnow() + timedelta(days=days)
+        
+        # Update user plan in the database
+        database.users.update_one(
+            {'user_id': user_id},
+            {'$set': {'plan': 'premium', 'premium_expiration': expiration_date}},
+            upsert=True
+        )
+        
+        await message.reply(f"User {user_id} has been upgraded to premium for {days} days.")
+    
+    except Exception as e:
+        await message.reply(f"Error: {e}")
+
+
 @Client.on_message(filters.text & filters.private)
 async def save(client: Client, message: Message):
     
@@ -175,7 +226,7 @@ async def save(client: Client, message: Message):
         return
 
 	
-    if is_free_user(message.from_user.id):
+    if Check_Plan(message.from_user.id):
         can_download_now, remaining_time = can_download(message.from_user.id)
         if not can_download_now:
             # Convert remaining time to minutes and seconds
@@ -201,7 +252,7 @@ async def save(client: Client, message: Message):
             toID = fromID
 
         # If the user is free and there's a range (fromID-toID), restrict them
-        if is_free_user(message.from_user.id) and fromID != toID:
+        if Check_Plan(message.from_user.id) and fromID != toID:
             await client.send_message(
                 chat_id=message.chat.id,
                 text="**❌ Free Users Can Only Save Single File at a Time, If You Want To Save Bulk File Then Buy Premium**",
