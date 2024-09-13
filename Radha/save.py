@@ -264,8 +264,8 @@ async def save(client: Client, message: Message):
                         user_data = database.find_one({"user_id": message.chat.id})
                         if not get(user_data, 'logged_in', False) or user_data['session'] is None:
                             await client.send_message(message.chat.id, strings['need_login'])
-				
-			    database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+                            
+                            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
                             return
                         acc = Client("saverestricted", session_string=user_data['session'], api_hash=API_HASH, api_id=API_ID)
                         await acc.connect()
@@ -273,7 +273,8 @@ async def save(client: Client, message: Message):
                         
                     except Exception as e:
                         await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
-			database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+                        
+                        database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
 
             # wait time
             await asyncio.sleep(3)
