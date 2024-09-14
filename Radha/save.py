@@ -179,7 +179,7 @@ async def send_help(client: Client, message: Message):
 @Client.on_message(filters.command("upgrade") & filters.private)
 async def upgrade_to_premium(client, message):
     # Check if the user is an admin
-    if message.from_user.id not in ADMIN_IDS:
+    if message.from_user.id not in ADMIN_ID:
         await message.reply("**❌This command can only be used by admins.**")
         return
 
