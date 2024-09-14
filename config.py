@@ -12,6 +12,11 @@ API_HASH = os.environ.get("API_HASH", "")
 #Database 
 DB_URI = os.environ.get("DB_URI", "")
 
+#Admin IDs
+ADMIN_ID = list(map(int, os.getenv("ADMIN_ID", "").split(",")))
+
+
+
 #Your Logs Channel/Group ID
 LOGS_CHAT_ID = int(os.environ.get("LOGS_CHAT_ID", ""))
 
