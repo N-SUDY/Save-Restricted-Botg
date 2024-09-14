@@ -279,9 +279,12 @@ async def save(client: Client, message: Message):
                 reply_to_message_id=message.id
             )
             return
-            
+
+        active_tasks[user_id] = {'fromID': fromID, 'toID': toID}
         
         for msgid in range(fromID, toID + 1):
+            if user_id not in active_tasks:
+                break
 
             # Update last download time for free users
             if is_free_user(message.from_user.id):
@@ -346,6 +349,9 @@ async def save(client: Client, message: Message):
 
             # wait time
             await asyncio.sleep(3)
+
+        if user_id in active_tasks:
+            del active_tasks[user_id]
 
 
 # handle private
@@ -479,6 +485,16 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
         os.remove(f'{message.id}upstatus.txt')
         os.remove(file)
     await client.delete_messages(message.chat.id,[smsg.id])
+
+
+@Client.on_message(filters.command("cancel"))
+async def stop_batch(client: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id in active_tasks:
+        del active_tasks[user_id]
+        await client.send_message(message.chat.id, "Batch processing stopped.")
+    else:
+        await client.send_message(message.chat.id, "No active batch processing to stop.")
 
 
 # get the type of message
