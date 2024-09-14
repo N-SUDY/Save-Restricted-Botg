@@ -287,7 +287,7 @@ async def save(client: Client, message: Message):
                 break
 
             # Update last download time for free users
-            if is_free_user(message.from_user.id):
+            if Check_Plan(message.from_user.id):
                 update_last_download_time(message.from_user.id)
 
             # Private
@@ -477,7 +477,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
 
     
-    if is_free_user(message.from_user.id):
+    if Check_Plan(message.from_user.id):
             update_last_download_time(message.from_user.id)
 
 	
