@@ -228,6 +228,9 @@ async def upgrade_to_premium(client, message):
         await message.reply(f"**Failed to notify the user: {e}**")
 
 
+active_tasks = {}
+
+
 @Client.on_message(filters.text & filters.private)
 async def save(client: Client, message: Message):
     
