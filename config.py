@@ -16,7 +16,6 @@ DB_URI = os.environ.get("DB_URI", "")
 ADMIN_ID = list(map(int, os.getenv("ADMIN_ID", "").split(",")))
 
 
-
 #Your Logs Channel/Group ID
 LOGS_CHAT_ID = int(os.environ.get("LOGS_CHAT_ID", ""))
 
