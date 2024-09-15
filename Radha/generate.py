@@ -31,7 +31,6 @@ def get(obj, key, default=None):
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
 async def logout(client: Client, message: Message):
     if not await is_member(client, message.from_user.id):
-        
         await client.send_message(
             chat_id=message.chat.id,
             text=f"👋 ʜɪ {message.from_user.mention}, ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍᴇ.",
@@ -41,17 +40,17 @@ async def logout(client: Client, message: Message):
             reply_to_message_id=message.id  
         )
         return
-        
-    user_data = sessions_collection.find_one({"user_id": message.chat.id})
+    
+    user_data = await sessions_collection.find_one({"user_id": message.chat.id})
     if user_data is None or not user_data.get('logged_in', False):
         await message.reply("**You are not logged in! Please /login first.**")
         return
-    data = {
-        'logged_in': False,
-        'session': None,
-        '2FA': None
-    }
-    sessions_collection.update_one({'_id': user_data['_id']}, {'$set': data})
+
+    await sessions_collection.update_one(
+        {'_id': user_data['_id']},
+        {'$set': {'logged_in': False, 'session': None, '2FA': None}}
+    )
+    
     await message.reply("**Logout Successfully** ♦")
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
