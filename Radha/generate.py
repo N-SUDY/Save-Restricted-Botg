@@ -30,10 +30,12 @@ def get(obj, key, default=None):
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
 async def logout(client: Client, message: Message):
-    # Check if the user is not a member
-    if not await is_member(client, message.from_user.id):
+    user_id = message.chat.id
+    
+    # Check if the user is a member of the required channel
+    if not await is_member(client, user_id):
         await client.send_message(
-            chat_id=message.chat.id,
+            chat_id=user_id,
             text=f"👋 Hi {message.from_user.mention}, you must join my channel to use me.",
             reply_markup=InlineKeyboardMarkup([[
                 InlineKeyboardButton("Join ❤️", url=FSUB_INV_LINK)
@@ -41,22 +43,23 @@ async def logout(client: Client, message: Message):
             reply_to_message_id=message.id
         )
         return  # Stop further execution if not a member
+
+    # Fetch user session from the database using user_id
+    user_data = await database.sessions.find_one({"user_id": user_id})
     
-    # Find the user session based on user_id
-    user_data = await database.sessions.find_one({"user_id": message.chat.id})
-    
-    # If no session or not logged in, send a message and return
-    if user_data is None or not user_data.get('logged_in', False):
+    # If no session exists or user is not logged in
+    if not user_data or not user_data.get('logged_in', False):
         await message.reply("**You are not logged in! Please /login first.**")
         return
 
-    # Update the session to log out the user
+    # Log out the user by updating the session
     await database.sessions.update_one(
-        {'user_id': message.from_user.id},  # Use user_id to target the document
-        {'$set': {'logged_in': False, 'session': None, '2FA': None}}  # Log out the user
+        {'user_id': user_id},  # Match by user_id
+        {'$set': {'logged_in': False, 'session': None, '2FA': None}}  # Update session fields
     )
     
     await message.reply("**Logout Successfully** ♦")
+
 
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
