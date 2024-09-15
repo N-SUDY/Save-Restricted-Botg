@@ -29,6 +29,44 @@ def get(obj, key, default=None):
     except:
         return default
 
+@Client.on_message(filters.command(["test"]))
+async def send_start(client: Client, message: Message):
+
+    # Check if the user is a member of the required channel/group
+    if not await is_member(client, message.from_user.id):
+        
+        await client.send_message(
+            chat_id=message.chat.id,
+            text=f"👋 ʜɪ {message.from_user.mention}, ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍᴇ.",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("ᴊᴏɪɴ ❤️", url=FSUB_INV_LINK)
+            ]]),
+            reply_to_message_id=message.id  
+        )
+        return
+
+	    
+    if not database.users.find_one({'user_id': message.from_user.id}):
+        database.users.insert_one({
+            'user_id': message.from_user.id,
+            'first_name': message.from_user.first_name,
+            'registered_at': time.time(),
+            'plan': 'free',
+            'last_download_time': None
+            
+            
+        })
+	
+    buttons = [[
+        InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ ⚡️", url = "https://t.me/i_am_radha")
+    ],[
+        InlineKeyboardButton('🔍 sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ', url='https://t.me/radhasuppportchat'),
+        InlineKeyboardButton('🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url='https://t.me/tg_bots_radha')
+	]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await client.send_message(message.chat.id, f"<b>👋 Hi {message.from_user.mention}, I am Save Restricted Content Bot, I can send you restricted content by its post link.\n\nFor downloading restricted content /login first.\n\nKnow how to use bot by - /help</b>", reply_markup=reply_markup, reply_to_message_id=message.id)
+    return
+
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
 async def logout(client: Client, message: Message):
     if not await is_member(client, message.from_user.id):
