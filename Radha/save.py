@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import os
 import threading
 import json
-from config import API_ID, API_HASH, ADMIN_ID, FSUB_ID, FSUB_INV_LINK
+from config import API_ID, API_HASH, FSUB_ID, FSUB_INV_LINK
 from database.db import database 
 from Radha.strings import strings, HELP_TXT
 
