@@ -176,56 +176,58 @@ async def send_help(client: Client, message: Message):
 	
     await client.send_message(message.chat.id, f"{HELP_TXT}")
 
+
 @Client.on_message(filters.command("upgrade") & filters.private)
 async def upgrade_to_premium(client, message):
-    # Check if the user is an admin
-    if message.from_user.id not in ADMIN_ID:
-        await message.reply("**❌This command can only be used by admins.**")
-        return
-
     try:
+        # Check if the user is an admin
+        if message.from_user.id not in ADMIN_IDS:
+            await message.reply("**❌This command can only be used by admins.**")
+            return
+
         # Extract user ID and days from the command
         command = message.text.split()
         if len(command) != 3:
             await message.reply("**Usage: /upgrade <user_id> <days>**")
             return
-    
+
         user_id = int(command[1])
         days = int(command[2])
-    
+
         # Check if the user exists in the database
         user = database.users.find_one({'user_id': user_id})
-        user_info = await client.get_users(user_id)
         if user is None:
-            await message.reply(f"**User ID {user_id} not found in the database.**")
+            await message.reply(f"❌**User ID {user_id} not found in the database.**")
             return
-    
+
         # Calculate premium expiration date
         current_time = datetime.utcnow()
         expiration_date = current_time + timedelta(days=days)
-    
+
         # Format dates
         expiration_date_ist = expiration_date.astimezone(pytz.timezone('Asia/Kolkata'))
         expiry_str_in_ist = expiration_date_ist.strftime('%Y-%m-%d %H:%M:%S')
         current_time_str = current_time.strftime('%Y-%m-%d %H:%M:%S')
-    
+
         # Update user plan in the database
         database.users.update_one(
             {'user_id': user_id},
             {'$set': {'plan': 'premium', 'premium_expiration': expiration_date}},
             upsert=True
-	)
-    
+        )
+
         # Notify the admin about the upgrade
         await message.reply_text(f"ᴘʀᴇᴍɪᴜᴍ ᴀᴅᴅᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ✅\n\n👤 ᴜꜱᴇʀ : {user_info.mention}\n⚡ ᴜꜱᴇʀ ɪᴅ : <code>{user_id}</code>\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}", disable_web_page_preview=True)
+        
         await client.send_message(
 		user_id,
 		f"👋 ʜᴇʏ {user_info.mention},\nᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ᴘᴜʀᴄʜᴀꜱɪɴɢ ᴘʀᴇᴍɪᴜᴍ.\nᴇɴᴊᴏʏ !! ✨🎉\n\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}",
 		disable_web_page_preview=True
-	)
+        )
 
     except Exception as e:
-        await message.reply(f"**Failed to notify the user: {e}**")
+        await message.reply(f"An error occurred: {e}")
+
 
 
 active_tasks = {}
