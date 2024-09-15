@@ -29,8 +29,8 @@ def get(obj, key, default=None):
         return default
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
-async def logout(_, msg):
-    user_data = database.find_one({"user_id": msg.chat.id})
+async def logout(_, message: Message):
+    user_data = database.find_one({"user_id": message.from_user.id})
     if user_data is None or not user_data.get('logged_in', False):
         await message.reply("**You are not logged in! Please /login first.**")
         return 
@@ -44,7 +44,7 @@ async def logout(_, msg):
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
 async def main(bot: Client, message: Message):
-  if not database.sessions.find_one({"user_id": message.from_user.id}):
+    if not database.sessions.find_one({"user_id": message.from_user.id}):
         # Insert default session data for a new user
         database.sessions.insert_one({
             'user_id': message.from_user.id,
