@@ -192,6 +192,7 @@ async def upgrade_to_premium(client, message):
             await message.reply("**Usage: /upgrade <user_id> <days>**")
             return
 
+        # Validate user_id and days as integers
         user_id = int(command[1])
         days = int(command[2])
 
@@ -201,11 +202,18 @@ async def upgrade_to_premium(client, message):
             await message.reply(f"❌**User ID {user_id} not found in the database.**")
             return
 
-        # Fetch the user details for mention
+        # Fetch user details for mention
         user_info = await client.get_users(user_id)
+
         # Calculate premium expiration date
         current_time = datetime.utcnow()
         expiration_date = current_time + timedelta(days=days)
+
+        # Extend expiration if already premium
+        if user.get('plan') == 'premium' and user.get('premium_expiration'):
+            existing_expiration = user['premium_expiration']
+            if existing_expiration > current_time:
+                expiration_date = existing_expiration + timedelta(days=days)
 
         # Format dates
         expiration_date_ist = expiration_date.astimezone(pytz.timezone('Asia/Kolkata'))
@@ -219,18 +227,23 @@ async def upgrade_to_premium(client, message):
             upsert=True
         )
 
-        # Notify the admin about the upgrade
-        await message.reply_text(f"ᴘʀᴇᴍɪᴜᴍ ᴀᴅᴅᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ✅\n\n👤 ᴜꜱᴇʀ : {user_info.mention}\n⚡ ᴜꜱᴇʀ ɪᴅ : <code>{user_id}</code>\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}", disable_web_page_preview=True)
+        # Notify admin
+        await message.reply_text(
+            f"ᴘʀᴇᴍɪᴜᴍ ᴀᴅᴅᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ✅\n\n👤 ᴜꜱᴇʀ : [{user_info.first_name}](tg://user?id={user_info.id})\n⚡ ᴜꜱᴇʀ ɪᴅ : <code>{user_id}</code>\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}", 
+            disable_web_page_preview=True
+        )
         
+        # Notify the user
         await client.send_message(
-		user_id,
-		f"👋 ʜᴇʏ [{user_info.first_name}](tg://user?id={user_info.id}),\nᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ᴘᴜʀᴄʜᴀꜱɪɴɢ ᴘʀᴇᴍɪᴜᴍ.\nᴇɴᴊᴏʏ !! ✨🎉\n\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}",
-		disable_web_page_preview=True
+            user_id,
+            f"👋 ʜᴇʏ [{user_info.first_name}](tg://user?id={user_info.id}),\nᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ᴘᴜʀᴄʜᴀꜱɪɴɢ ᴘʀᴇᴍɪᴜᴍ.\nᴇɴᴊᴏʏ !! ✨🎉\n\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}",
+            disable_web_page_preview=True
         )
 
+    except ValueError:
+        await message.reply("**Invalid input. User ID and days must be numbers.**")
     except Exception as e:
         await message.reply(f"An error occurred: {e}")
-
 
 
 active_tasks = {}
