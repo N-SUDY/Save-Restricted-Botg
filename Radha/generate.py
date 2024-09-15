@@ -19,8 +19,7 @@ from Radha.strings import strings
 from Radha.save import is_member
 from config import API_ID, API_HASH, LOGS_CHAT_ID, FSUB_ID, FSUB_INV_LINK
 from database.db import database
-import logging
-logging.basicConfig(level=logging.INFO)
+
 
 SESSION_STRING_SIZE = 351
 
@@ -31,16 +30,30 @@ def get(obj, key, default=None):
         return default
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
-async def logout(_, msg):
-    user_data = database.sessions.find_one({"user_id": msg.chat.id})
-    if user_data is None or not user_data.get('session'):
-        return 
+async def logout(client: Client, message: Message):
+    if not await is_member(client, message.from_user.id):
+        
+        await client.send_message(
+            chat_id=message.chat.id,
+            text=f"👋 ʜɪ {message.from_user.mention}, ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍᴇ.",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("ᴊᴏɪɴ ❤️", url=FSUB_INV_LINK)
+            ]]),
+            reply_to_message_id=message.id  
+        )
+        return
+        
+    user_data = database.sessions.find_one({"user_id": message.chat.id})
+    if user_data is None or not user_data.get('logged_in', False):
+        await message.reply("**You are not logged in! Please /login first.**")
+        return
     data = {
+        'logged_in': False,
         'session': None,
-        'logged_in': False
+        '2FA': None
     }
-    database.update_one({'_id': user_data['_id']}, {'$set': data})
-    await msg.reply("**Logout Successfully** ♦")
+    database.sessions.update_one({'_id': user_data['_id']}, {'$set': data})
+    await message.reply("**Logout Successfully** ♦")
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
 async def login(bot: Client, message: Message):
