@@ -19,6 +19,8 @@ from Radha.strings import strings
 from Radha.save import is_member
 from config import API_ID, API_HASH, LOGS_CHAT_ID, FSUB_ID, FSUB_INV_LINK
 from database.db import database
+import logging
+logging.basicConfig(level=logging.INFO)
 
 SESSION_STRING_SIZE = 351
 
@@ -46,6 +48,7 @@ async def logout(_, message: Message):
 async def main(bot: Client, message: Message):
     if not database.sessions.find_one({"user_id": message.from_user.id}):
         # Insert default session data for a new user
+        logging.info("Inserting new user session data")
         database.sessions.insert_one({
             'user_id': message.from_user.id,
             'logged_in': False,
@@ -53,6 +56,7 @@ async def main(bot: Client, message: Message):
             '2FA': None
         })
     user_data = database.sessions.find_one({"user_id": message.from_user.id})
+    logging.info(f"User data: {user_data}")
     if get(user_data, 'logged_in', True):
         await message.reply(strings['already_logged_in'])
         return 
