@@ -223,7 +223,7 @@ async def upgrade_to_premium(client, message):
         
         await client.send_message(
 		user_id,
-		f"👋 ʜᴇʏ {user_info.mention},\nᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ᴘᴜʀᴄʜᴀꜱɪɴɢ ᴘʀᴇᴍɪᴜᴍ.\nᴇɴᴊᴏʏ !! ✨🎉\n\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}",
+		f"👋 ʜᴇʏ [{user_info.first_name}](tg://user?id={user_info.id}),\nᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ᴘᴜʀᴄʜᴀꜱɪɴɢ ᴘʀᴇᴍɪᴜᴍ.\nᴇɴᴊᴏʏ !! ✨🎉\n\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : <code>{days} days</code>\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}",
 		disable_web_page_preview=True
         )
 
@@ -288,7 +288,7 @@ async def save(client: Client, message: Message):
             )
             return
 
-        active_tasks[user_id] = {'fromID': fromID, 'toID': toID}
+        active_tasks[message.from_user.id] = {'fromID': fromID, 'toID': toID}
         
         for msgid in range(fromID, toID + 1):
             if user_id not in active_tasks:
