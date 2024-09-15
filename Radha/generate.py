@@ -31,15 +31,13 @@ def get(obj, key, default=None):
         return default
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
-async def logout(_, message: Message):
-    user_data = database.sessions.find_one({"user_id": message.from_user.id})
-    if user_data is None or not user_data.get('logged_in', False):
-        await message.reply("**You are not logged in! Please /login first.**")
+async def logout(_, msg):
+    user_data = database.sessions.find_one({"user_id": msg.chat.id})
+    if user_data is None or not user_data.get('session'):
         return 
     data = {
-        'logged_in': False,
         'session': None,
-        '2FA': None
+        'logged_in': False
     }
     database.update_one({'_id': user_data['_id']}, {'$set': data})
     await msg.reply("**Logout Successfully** ♦")
