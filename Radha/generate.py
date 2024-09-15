@@ -30,7 +30,7 @@ def get(obj, key, default=None):
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
 async def logout(_, message: Message):
-    user_data = database.find_one({"user_id": message.from_user.id})
+    user_data = database.sessions.find_one({"user_id": message.from_user.id})
     if user_data is None or not user_data.get('logged_in', False):
         await message.reply("**You are not logged in! Please /login first.**")
         return 
