@@ -30,28 +30,34 @@ def get(obj, key, default=None):
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
 async def logout(client: Client, message: Message):
+    # Check if the user is not a member
     if not await is_member(client, message.from_user.id):
         await client.send_message(
             chat_id=message.chat.id,
-            text=f"👋 ʜɪ {message.from_user.mention}, ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍᴇ.",
+            text=f"👋 Hi {message.from_user.mention}, you must join my channel to use me.",
             reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("ᴊᴏɪɴ ❤️", url=FSUB_INV_LINK)
+                InlineKeyboardButton("Join ❤️", url=FSUB_INV_LINK)
             ]]),
-            reply_to_message_id=message.id  
+            reply_to_message_id=message.id
         )
-        return
+        return  # Stop further execution if not a member
     
-    user_data = await sessions_collection.find_one({"user_id": message.chat.id})
+    # Find the user session based on user_id
+    user_data = await database.sessions.find_one({"user_id": message.chat.id})
+    
+    # If no session or not logged in, send a message and return
     if user_data is None or not user_data.get('logged_in', False):
         await message.reply("**You are not logged in! Please /login first.**")
         return
 
-    await sessions_collection.update_one(
-        {'_id': user_data['_id']},
-        {'$set': {'logged_in': False, 'session': None, '2FA': None}}
+    # Update the session to log out the user
+    await database.sessions.update_one(
+        {'user_id': message.from_user.id},  # Use user_id to target the document
+        {'$set': {'logged_in': False, 'session': None, '2FA': None}}  # Log out the user
     )
     
     await message.reply("**Logout Successfully** ♦")
+
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
 async def login(bot: Client, message: Message):
