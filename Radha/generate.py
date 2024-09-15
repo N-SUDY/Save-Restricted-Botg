@@ -30,10 +30,9 @@ def get(obj, key, default=None):
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["logout"]))
 async def logout(client: Client, message: Message):
-    user_id = message.chat.id
     
     # Check if the user is a member of the required channel
-    if not await is_member(client, user_id):
+    if not await is_member(client, message.from_user.id):
         await client.send_message(
             chat_id=user_id,
             text=f"👋 Hi {message.from_user.mention}, you must join my channel to use me.",
@@ -45,7 +44,7 @@ async def logout(client: Client, message: Message):
         return  # Stop further execution if not a member
 
     # Fetch user session from the database using user_id
-    user_data = await database.sessions.find_one({"user_id": user_id})
+    user_data = await database.sessions.find_one({"user_id": message.from_user.id})
     
     # If no session exists or user is not logged in
     if not user_data or not user_data.get('logged_in', False):
@@ -54,7 +53,7 @@ async def logout(client: Client, message: Message):
 
     # Log out the user by updating the session
     await database.sessions.update_one(
-        {'user_id': user_id},  # Match by user_id
+        {'user_id': message.from_user.id},  # Match by user_id
         {'$set': {'logged_in': False, 'session': None, '2FA': None}}  # Update session fields
     )
     
