@@ -18,7 +18,7 @@ from pyrogram.errors import (
 from Radha.save import is_member
 from Radha.strings import strings
 from config import API_ID, API_HASH, LOGS_CHAT_ID, FSUB_ID, FSUB_INV_LINK
-from database.db import database
+from database.db import database, sessions_collection
 
 SESSION_STRING_SIZE = 351
 
@@ -42,7 +42,7 @@ async def logout(client: Client, message: Message):
         )
         return
         
-    user_data = database.sessions.find_one({"user_id": message.chat.id})
+    user_data = sessions_collection.find_one({"user_id": message.chat.id})
     if user_data is None or not user_data.get('logged_in', False):
         await message.reply("**You are not logged in! Please /login first.**")
         return
@@ -51,7 +51,7 @@ async def logout(client: Client, message: Message):
         'session': None,
         '2FA': None
     }
-    database.sessions.update_one({'_id': user_data['_id']}, {'$set': data})
+    sessions_collection.update_one({'_id': user_data['_id']}, {'$set': data})
     await message.reply("**Logout Successfully** ♦")
 
 @Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
