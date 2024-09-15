@@ -197,7 +197,7 @@ async def upgrade_to_premium(client, message):
 
         # Check if the user exists in the database
         user = database.users.find_one({'user_id': user_id})
-	if user is None:
+        if user is None:
             await message.reply(f"❌**User ID {user_id} not found in the database.**")
             return
 
