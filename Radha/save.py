@@ -236,7 +236,7 @@ async def save(client: Client, message: Message):
         active_tasks[message.from_user.id] = {'fromID': fromID, 'toID': toID}
         
         for msgid in range(fromID, toID + 1):
-            if user_id not in active_tasks:
+            if message.from_user.id not in active_tasks:
                 break
 
             # Update last download time for free users
