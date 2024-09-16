@@ -3,6 +3,7 @@
 
 import traceback
 from pyrogram.types import Message
+import pyrogram
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMemberStatus
 from asyncio.exceptions import TimeoutError
