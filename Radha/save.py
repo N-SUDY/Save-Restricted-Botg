@@ -273,7 +273,7 @@ async def remove_premium(client, message):
         # Extract user ID from the command
         command = message.text.split()
         if len(command) != 2:  # We expect the command format: /remove_premium user_id
-            await message.reply("**Usage: /remove_premium user_id**")
+            await message.reply("**Usage: /remove user_id**")
             return
 
         # Validate user_id as an integer
