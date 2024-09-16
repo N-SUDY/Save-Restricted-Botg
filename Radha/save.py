@@ -179,23 +179,27 @@ async def send_help(client: Client, message: Message):
     await client.send_message(message.chat.id, f"{HELP_TXT}")
 
 
-@Client.on_message(filters.command("upgrade") & filters.private)
-async def upgrade_to_premium(client, message):
+@Client.on_message(filters.command("remove") & filters.private)
+async def remove_premium(client, message):
     try:
         # Check if the user is an admin
         if message.from_user.id not in ADMIN_ID:
             await message.reply("**❌ This command can only be used by admins.**")
             return
 
-        # Extract user ID and days from the command
+        # Extract user ID from the command
         command = message.text.split()
         if len(command) != 2:
-            await message.reply("**Usage: /upgrade user_id days**")
+            await message.reply("**Usage: /remove user_id**")
             return
-		
-        # Validate user_id and days as integers
-        user_id = int(command[1])
-        days = int(command[2])
+
+        # Validate user_id as an integer
+        user_id = command[1]
+        if not user_id.isdigit():
+            await message.reply("**Invalid input. User ID must be a valid number.**")
+            return
+
+        user_id = int(user_id)  # Convert user_id to integer after validation
 
         # Check if the user exists in the database
         user = database.users.find_one({'user_id': user_id})
@@ -206,40 +210,18 @@ async def upgrade_to_premium(client, message):
         # Fetch user details for mention
         user_info = await client.get_users(user_id)
 
-        # Calculate premium expiration date
-        current_time = datetime.utcnow()
-        expiration_date = current_time + timedelta(days=days)
-
-        # Extend expiration if already premium
-        if user.get('plan') == 'premium' and user.get('premium_expiration'):
-            existing_expiration = user['premium_expiration']
-            if existing_expiration > current_time:
-                expiration_date = existing_expiration + timedelta(days=days)
-
-        # Convert to Indian Time Zone
-        ist_timezone = pytz.timezone('Asia/Kolkata')
-        current_time_ist = current_time.astimezone(ist_timezone)
-        expiration_date_ist = expiration_date.astimezone(ist_timezone)
-
-        # Format dates
-        expiry_str_in_ist = expiration_date_ist.strftime('%Y-%m-%d %H:%M:%S')
-        current_time_str = current_time_ist.strftime('%Y-%m-%d %H:%M:%S')
-
-        # Update user plan in the database
+        # Update user plan to "free" and set premium_expiration to None
         database.users.update_one(
             {'user_id': user_id},
-            {'$set': {'plan': 'premium', 'premium_expiration': expiration_date}},
-            upsert=True
+            {'$set': {'plan': 'free', 'premium_expiration': None}}
         )
 
         # Notify admin
         await message.reply_text(
-            f"**Premium added successfully ✅**\n\n"
-            f"👤 **User:** {user_info.mention}\n"
+            f"**Premium removed successfully ✅**\n\n"
+            f"👤 **User:** [{user_info.first_name}](tg://user?id={user_info.id})\n"
             f"⚡ **User ID:** `{user_id}`\n"
-            f"⏰ **Premium Access:** `{days} days`\n\n"
-            f"⏳ **Joining Date:** `{current_time_str}`\n"
-            f"⌛️ **Expiry Date:** `{expiry_str_in_ist}`", 
+            f"User is now on the free plan.", 
             disable_web_page_preview=True, 
             parse_mode="Markdown"
         )
@@ -248,16 +230,12 @@ async def upgrade_to_premium(client, message):
         await client.send_message(
             user_id,
             f"👋 Hi [{user_info.first_name}](tg://user?id={user_info.id}),\n"
-            f"Thank you for purchasing premium.\nEnjoy! ✨🎉\n\n"
-            f"⏰ **Premium Access:** `{days} days`\n"
-            f"⏳ **Joining Date:** `{current_time_str}`\n"
-            f"⌛️ **Expiry Date:** `{expiry_str_in_ist}`",
+            f"Your premium plan has been removed❌.\n"
+            f"You are now on the free plan.",
             disable_web_page_preview=True,
             parse_mode="Markdown"
         )
 
-    except ValueError:
-        await message.reply("**Invalid input. User ID and days must be numbers.**")
     except Exception as e:
         await message.reply(f"**An error occurred:** {e}")
 
