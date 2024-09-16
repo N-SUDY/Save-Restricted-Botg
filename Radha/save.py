@@ -49,7 +49,7 @@ def Check_Plan(user_id):
         # If expired, downgrade to free and return True
         database.users.update_one(
             {'user_id': user_id},
-            {'$set': {'plan': 'free'}}
+            {'$set': {'plan': 'free'}, 'premium_expiration': None}
         )
         return True
     
@@ -144,6 +144,7 @@ async def send_start(client: Client, message: Message):
             'first_name': message.from_user.first_name,
             'registered_at': time.time(),
             'plan': 'free',
+	    'premium_expiration': None,
             'last_download_time': None
             
             
