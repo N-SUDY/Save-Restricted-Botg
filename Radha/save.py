@@ -250,12 +250,17 @@ async def remove_premium(client, message):
 
         # Extract user ID from the command
         command = message.text.split()
-        if len(command) != 2:  # We expect the command format: /remove_premium user_id
+        if len(command) != 2:
             await message.reply("**Usage: /remove user_id**")
             return
 
         # Validate user_id as an integer
-        user_id = int(command[1])
+        user_id = command[1]
+        if not user_id.isdigit():
+            await message.reply("**Invalid input. User ID must be a valid number.**")
+            return
+
+        user_id = int(user_id)  # Convert user_id to integer after validation
 
         # Check if the user exists in the database
         user = database.users.find_one({'user_id': user_id})
@@ -275,9 +280,9 @@ async def remove_premium(client, message):
         # Notify admin
         await message.reply_text(
             f"**Premium removed successfully ✅**\n\n"
-            f"👤 **User:** [{user_info.first_name}](tg://user?id={user_info.id})\n"
+            f"👤 **User:** {user_info.mention}\n"
             f"⚡ **User ID:** `{user_id}`\n"
-            f"**User is now on the free plan.**", 
+            f"User is now on the free plan, and their premium expiration is set to `None`.", 
             disable_web_page_preview=True, 
             parse_mode="Markdown"
         )
@@ -287,13 +292,11 @@ async def remove_premium(client, message):
             user_id,
             f"👋 Hi [{user_info.first_name}](tg://user?id={user_info.id}),\n"
             f"Your premium plan has been removed.\n"
-            f"You are now on the free plan.",
+            f"You are now on the free plan, and your premium expiration has been set to `None`.",
             disable_web_page_preview=True,
             parse_mode="Markdown"
         )
 
-    except ValueError:
-        await message.reply("**Invalid input. User ID must be a number.**")
     except Exception as e:
         await message.reply(f"**An error occurred:** {e}")
 
