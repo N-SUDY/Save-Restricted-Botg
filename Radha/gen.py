@@ -1,7 +1,5 @@
 # Don't Remove Credit Tg - @I_AM_RADHA
 # Ask Doubt on telegram @I_AM_RADHA
-print("generate.py is loaded")  # Debug to check if the file is loading
-
 import pyrogram
 from pyrogram import Client, filters
 from pyrogram.types import Message
