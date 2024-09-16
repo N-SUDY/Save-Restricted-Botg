@@ -184,7 +184,7 @@ async def upgrade_to_premium(client, message):
     try:
         # Check if the user is an admin
         if message.from_user.id not in ADMIN_ID:
-            await message.reply("**❌This command can only be used by admins.**")
+            await message.reply("**❌ This command can only be used by admins.**")
             return
 
         # Extract user ID and days from the command
@@ -200,7 +200,7 @@ async def upgrade_to_premium(client, message):
         # Check if the user exists in the database
         user = database.users.find_one({'user_id': user_id})
         if user is None:
-            await message.reply(f"❌**User ID {user_id} not found in the database.**")
+            await message.reply(f"**❌ User ID {user_id} not found in the database.**")
             return
 
         # Fetch user details for mention
@@ -232,23 +232,35 @@ async def upgrade_to_premium(client, message):
             upsert=True
         )
 
-        # Notify admin
+        # Notify admin (Ensure Markdown formatting is correct)
         await message.reply_text(
-            f"ᴘʀᴇᴍɪᴜᴍ ᴀᴅᴅᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ✅\n\n👤 ᴜꜱᴇʀ : [{user_info.first_name}](tg://user?id={user_info.id})\n⚡ ᴜꜱᴇʀ ɪᴅ : <code>{user_id}</code>\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : `{days} days`\n\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}", 
-            disable_web_page_preview=True
+            f"**Premium added successfully ✅**\n\n"
+            f"👤 **User:** {user_info.mention}\n"
+            f"⚡ **User ID:** `{user_id}`\n"
+            f"⏰ **Premium Access:** `{days} days`\n\n"
+            f"⏳ **Joining Date:** `{current_time_str}`\n"
+            f"⌛️ **Expiry Date:** `{expiry_str_in_ist}`", 
+            disable_web_page_preview=True, 
+            parse_mode="Markdown"
         )
         
-        # Notify the user
+        # Notify the user (Markdown formatting must also be correct)
         await client.send_message(
             user_id,
-            f"👋 ʜᴇʏ [{user_info.first_name}](tg://user?id={user_info.id}),\nᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ᴘᴜʀᴄʜᴀꜱɪɴɢ ᴘʀᴇᴍɪᴜᴍ.\nᴇɴᴊᴏʏ !! ✨🎉\n\n⏰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ : `{days} days`\n⏳ ᴊᴏɪɴɪɴɢ ᴅᴀᴛᴇ : {current_time_str}\n\n⌛️ ᴇxᴘɪʀʏ ᴅᴀᴛᴇ : {expiry_str_in_ist}",
-            disable_web_page_preview=True
+            f"👋 Hi [{user_info.first_name}](tg://user?id={user_info.id}),\n"
+            f"Thank you for purchasing premium.\nEnjoy! ✨🎉\n\n"
+            f"⏰ **Premium Access:** `{days} days`\n"
+            f"⏳ **Joining Date:** `{current_time_str}`\n"
+            f"⌛️ **Expiry Date:** `{expiry_str_in_ist}`",
+            disable_web_page_preview=True,
+            parse_mode="Markdown"
         )
 
     except ValueError:
         await message.reply("**Invalid input. User ID and days must be numbers.**")
     except Exception as e:
-        await message.reply(f"An error occurred: {e}")
+        await message.reply(f"**An error occurred:** {e}")
+
 
 
 active_tasks = {}
