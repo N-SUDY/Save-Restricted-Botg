@@ -189,8 +189,8 @@ async def upgrade_to_premium(client, message):
 
         # Extract user ID and days from the command
         command = message.text.split()
-        if len(command) != 2:
-            await message.reply("Usage: /upgrade <user_id> <days>")
+        if len(command) != 3:
+            await message.reply("**Usage: /upgrade user_id days**")
             return
 		
         # Validate user_id and days as integers
