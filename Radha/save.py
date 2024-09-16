@@ -273,41 +273,6 @@ async def remove_premium(client, message):
         # Extract user ID from the command
         command = message.text.split()
         if len(command) != 2:  # We expect the command format: /remove_premium user_id
-            await message.reply("**Usage: /remove user_id**")
-            return
-
-        # Validate user_id as an integer
-        user_id = int(command[1])
-
-        # Check if the user exists in the database
-        user = database.users.find_one({'user_id': user_id})
-        if user is None:
-            await message.reply(f"**❌ User ID {user_id} not found in the database.**")
-            return
-
-        # Fetch user details for mention
-        user_info = await client.get_users(user_id)
-
-        # Update user plan to "free" and set premium_expiration to None
-        database.users.update_one(
-            {'user_id': user_id},
-            {'$set': {'plan': 'free', 'premium_expiration': None}}
-        )
-
-        # Notify admin
-        await message.reply_text(
-            f"**Premium removed successfully ✅**\n\n"
-            f"👤 **User:** @Client.on_message(filters.command("remove_premium") & filters.private)
-async def remove_premium(client, message):
-    try:
-        # Check if the user is an admin
-        if message.from_user.id not in ADMIN_ID:
-            await message.reply("**❌ This command can only be used by admins.**")
-            return
-
-        # Extract user ID from the command
-        command = message.text.split()
-        if len(command) != 2:  # We expect the command format: /remove_premium user_id
             await message.reply("**Usage: /remove_premium user_id**")
             return
 
