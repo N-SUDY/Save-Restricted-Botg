@@ -232,7 +232,7 @@ async def upgrade_to_premium(client, message):
             upsert=True
         )
 
-        # Notify admin (Ensure Markdown formatting is correct)
+        # Notify admin
         await message.reply_text(
             f"**Premium added successfully ✅**\n\n"
             f"👤 **User:** {user_info.mention}\n"
@@ -244,7 +244,7 @@ async def upgrade_to_premium(client, message):
             parse_mode="Markdown"
         )
         
-        # Notify the user (Markdown formatting must also be correct)
+        # Notify the user
         await client.send_message(
             user_id,
             f"👋 Hi [{user_info.first_name}](tg://user?id={user_info.id}),\n"
