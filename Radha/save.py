@@ -236,7 +236,7 @@ async def upgrade_to_premium(client, message):
         await message.reply_text(
             f"**Premium added successfully ✅**\n\n"
             f"👤 **User:** [{user_info.first_name}](tg://user?id={user_info.id})\n"
-            f"⚡ **User ID:** {user_id}\n"
+            f"⚡ **User ID:** `{user_id}`\n"
             f"⏰ **Premium Access:** {days} days\n\n"
             f"⏳ **Joining Date:** {current_time_str}\n"
             f"⌛️ **Expiry Date:** {expiry_str_in_ist}", 
@@ -301,7 +301,7 @@ async def remove_premium(client, message):
         await message.reply_text(
             f"**Premium removed successfully ✅**\n\n"
             f"👤 **User:** [{user_info.first_name}](tg://user?id={user_info.id})\n"
-            f"⚡ **User ID:** `{user_id}`\n"
+            f"⚡ **User ID:** `{user_id}`\n\n"
             f"**User is now on the free plan.**", 
             disable_web_page_preview=True
         )
