@@ -569,7 +569,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}}
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
     
     if Check_Plan(message.from_user.id):
             update_last_download_time(message.from_user.id)
