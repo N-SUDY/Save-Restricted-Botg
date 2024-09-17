@@ -461,7 +461,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 	        
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
             return
 
     smsg = await client.send_message(message.chat.id, 'Downloading', reply_to_message_id=message.id)
@@ -474,7 +474,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
         await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)  
 	    
         # Set last_download_time to None in case of an error
-        database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+        database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
         
     
     upsta = asyncio.create_task(upstatus(client, f'{message.id}upstatus.txt', smsg))
@@ -496,7 +496,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
             
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
         if ph_path != None: os.remove(ph_path)
         
 
@@ -512,7 +512,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
         if ph_path != None: os.remove(ph_path)
 
     elif "Animation" == msg_type:
@@ -522,7 +522,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
             
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
         
         
 
@@ -533,7 +533,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
         
 
     elif "Voice" == msg_type:
@@ -543,7 +543,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
             
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
 
 
     elif "Audio" == msg_type:
@@ -558,7 +558,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}})
         
         if ph_path != None: os.remove(ph_path)
 
@@ -569,8 +569,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
             # Set last_download_time to None in case of an error
-            database.users.update_one({'user_id': user_id}, {'$set': {'last_download_time': None}})
-
+            database.users.update_one({'user_id': message.from_user.id}, {'$set': {'last_download_time': None}}
     
     if Check_Plan(message.from_user.id):
             update_last_download_time(message.from_user.id)
