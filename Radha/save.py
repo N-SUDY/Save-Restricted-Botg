@@ -310,7 +310,7 @@ async def remove_premium(client, message):
         await client.send_message(
             user_id,
             f"👋 Hi [{user_info.first_name}](tg://user?id={user_info.id}),\n"
-            f"**Your premium plan has been removed ❌.**\n"
+            f"**Your premium plan has been removed.**\n"
             f"**You are now on the free plan.**",
             disable_web_page_preview=True
         )
