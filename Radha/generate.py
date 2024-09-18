@@ -89,9 +89,6 @@ async def login(bot: Client, message: Message):
                 except Exception as e:
                     await message.reply(f"<b>ERROR:</b> `{e}`")
                 return
-        else:
-            await message.reply(strings['already_logged_in'])
-            return
         
     user_id = int(message.from_user.id)
     phone_number_msg = await bot.ask(chat_id=user_id, text="<b>Please send your phone number which includes country code</b>\n<b>Example:</b> <code>+13124562345, +9171828181889</code>")
