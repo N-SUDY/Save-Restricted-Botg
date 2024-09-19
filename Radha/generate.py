@@ -75,9 +75,30 @@ async def login(bot: Client, message: Message):
             '2FA': None
         })
     user_data = database.sessions.find_one({"user_id": message.from_user.id})
-    if get(user_data, 'logged_in', True):
-        await message.reply(strings['already_logged_in'])
-        return 
+    if user_data and user_data.get('logged_in', True):
+        # Create a temporary client using the stored session string
+        try:
+            temp_client = Client(":memory:", session_string=user_data['session'], api_id=API_ID, api_hash=API_HASH)
+            await temp_client.connect()
+
+            user_info = await temp_client.get_me()
+            phone_number = user_info.phone_number
+            account_name = user_info.first_name
+
+            # Send the logged-in user their phone number and account name
+            await message.reply(f"**You are already logged in!**\n\n"
+                                f"**Phone Number:** `{phone_number}`\n"
+                                f"**Account Name:** `{account_name}`\n\n"
+                                "If you want to log out, please use the /logout command.")
+            
+            await temp_client.disconnect()
+            return 
+
+        except Exception as e:
+            # If session string is invalid, catch the exception and send the "already_logged_in" string
+            await message.reply(strings['already_logged_in'])
+            return
+            
     user_id = int(message.from_user.id)
     phone_number_msg = await bot.ask(chat_id=user_id, text="<b>Please send your phone number which includes country code</b>\n<b>Example:</b> <code>+13124562345, +9171828181889</code>")
     if phone_number_msg.text=='/cancel':
