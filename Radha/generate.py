@@ -75,25 +75,7 @@ async def login(bot: Client, message: Message):
             '2FA': None
         })
     user_data = database.sessions.find_one({"user_id": message.from_user.id})
-    
-Copy code
-@Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
-async def login(bot: Client, message: Message):
-    # Check if the user is a member of the required channel/group
-    if not await is_member(bot, message.from_user.id):
-        await bot.send_message(
-            chat_id=message.chat.id,
-            text=f"👋 Hi {message.from_user.mention}, you must join my channel to use me.",
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("Join ❤️", url=FSUB_INV_LINK)
-            ]]),
-            reply_to_message_id=message.id  
-        )
-        return
 
-    # Check if user session already exists and is logged in
-    user_data = database.sessions.find_one({"user_id": message.from_user.id})
-    
     if user_data and user_data.get('logged_in', True):
         # If already logged in, reconnect quickly using stored session
         string_session = user_data.get('session')
@@ -108,8 +90,7 @@ async def login(bot: Client, message: Message):
         else:
             await message.reply("Session data is invalid, please /logout and /login again.")
             return
-    
-        
+            
     user_id = int(message.from_user.id)
     phone_number_msg = await bot.ask(chat_id=user_id, text="<b>Please send your phone number which includes country code</b>\n<b>Example:</b> <code>+13124562345, +9171828181889</code>")
     if phone_number_msg.text=='/cancel':
