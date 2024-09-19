@@ -75,22 +75,9 @@ async def login(bot: Client, message: Message):
             '2FA': None
         })
     user_data = database.sessions.find_one({"user_id": message.from_user.id})
-
-    if user_data and user_data.get('logged_in', True):
-        # If already logged in, reconnect quickly using stored session
-        string_session = user_data.get('session')
-        if string_session:
-            try:
-                async with Client(":memory:", session_string=string_session, api_id=API_ID, api_hash=API_HASH) as uclient:
-                    user_info = await uclient.get_me()
-                    await message.reply(f"You're already logged in as {user_info.first_name}.\nPhone Number: {user_info.phone_number}")
-            except Exception as e:
-                await message.reply(f"Error reconnecting: {str(e)}")
-            return
-        else:
-            await message.reply("Session data is invalid, please /logout and /login again.")
-            return
-            
+    if get(user_data, 'logged_in', True):
+        await message.reply(strings['already_logged_in'])
+        return 
     user_id = int(message.from_user.id)
     phone_number_msg = await bot.ask(chat_id=user_id, text="<b>Please send your phone number which includes country code</b>\n<b>Example:</b> <code>+13124562345, +9171828181889</code>")
     if phone_number_msg.text=='/cancel':
@@ -157,5 +144,5 @@ async def login(bot: Client, message: Message):
     await bot.send_message(message.from_user.id, "<b>Account Login Successfully.\n\nIf You Get Any Error Related To AUTH KEY Then /logout and /login again</b>")
 
 
-# Don't Remove Credit Tg - @I_AM_RADHA
-# Ask Doubt on telegram @I_AM_RADHA
+# Don't Remove Credit Tg - @FLiX_LY
+# Ask Doubt on telegram @FLiX_LY
