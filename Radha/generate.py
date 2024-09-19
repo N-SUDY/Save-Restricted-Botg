@@ -75,20 +75,40 @@ async def login(bot: Client, message: Message):
             '2FA': None
         })
     user_data = database.sessions.find_one({"user_id": message.from_user.id})
-    if user_data:
-        if get(user_data, 'logged_in', True):
-            # Connect to the user's account using the stored session string
-            string_session = user_data.get('session')
-            if len(string_session) >= SESSION_STRING_SIZE:
-                try:
-                    async with Client(":memory:", session_string=string_session, api_id=API_ID, api_hash=API_HASH) as uclient:
-                        me = await uclient.get_me()
-                        phone_number = me.phone_number
-                        account_name = me.first_name
-                        await message.reply(f"**You are already logged in!**\n\n**Phone Number:** {phone_number}\n**Account Name:** {account_name}")
-                except Exception as e:
-                    await message.reply(f"<b>ERROR:</b> `{e}`")
-                return
+    
+Copy code
+@Client.on_message(filters.private & ~filters.forwarded & filters.command(["login"]))
+async def login(bot: Client, message: Message):
+    # Check if the user is a member of the required channel/group
+    if not await is_member(bot, message.from_user.id):
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text=f"👋 Hi {message.from_user.mention}, you must join my channel to use me.",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("Join ❤️", url=FSUB_INV_LINK)
+            ]]),
+            reply_to_message_id=message.id  
+        )
+        return
+
+    # Check if user session already exists and is logged in
+    user_data = database.sessions.find_one({"user_id": message.from_user.id})
+    
+    if user_data and user_data.get('logged_in', True):
+        # If already logged in, reconnect quickly using stored session
+        string_session = user_data.get('session')
+        if string_session:
+            try:
+                async with Client(":memory:", session_string=string_session, api_id=API_ID, api_hash=API_HASH) as uclient:
+                    user_info = await uclient.get_me()
+                    await message.reply(f"You're already logged in as {user_info.first_name}.\nPhone Number: {user_info.phone_number}")
+            except Exception as e:
+                await message.reply(f"Error reconnecting: {str(e)}")
+            return
+        else:
+            await message.reply("Session data is invalid, please /logout and /login again.")
+            return
+    
         
     user_id = int(message.from_user.id)
     phone_number_msg = await bot.ask(chat_id=user_id, text="<b>Please send your phone number which includes country code</b>\n<b>Example:</b> <code>+13124562345, +9171828181889</code>")
